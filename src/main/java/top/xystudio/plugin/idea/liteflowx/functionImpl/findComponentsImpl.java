@@ -18,24 +18,27 @@ public class findComponentsImpl implements BiFunction<Project, String, List<? ex
     @Override
     public List<? extends PsiElement> apply(Project project, String name) {
         List<PsiElement> result = new ArrayList<>();
-        if (name == null || name.equals("")){
+        if (name == null || name.equals("")) {
             return result;
         }
         PsiElement[] allComponent = LiteFlowService.getInstance(project).findAllLiteFlowComponent();
         for (PsiElement psiElement : allComponent) {
-            if (psiElement instanceof PsiClass){
-                String componentName = LiteFlowService.getInstance(project).getLiteFlowComponentNameByPsiClass((PsiClass) psiElement);
-                if (componentName != null && componentName.equals(name)){
+            if (psiElement instanceof PsiClass) {
+                String componentName =
+                        LiteFlowService.getInstance(project).getLiteFlowComponentNameByPsiClass((PsiClass) psiElement);
+                if (componentName != null && componentName.equals(name)) {
                     result.add(psiElement);
                 }
             } else if (psiElement instanceof PsiMethod) {
-                String componentName = LiteFlowService.getInstance(project).getLiteFlowComponentNameByPsiMethod((PsiMethod) psiElement);
-                if (componentName != null && componentName.equals(name)){
+                String componentName =
+                        LiteFlowService.getInstance(project).getLiteFlowComponentNameByPsiMethod((PsiMethod) psiElement);
+                if (componentName != null && componentName.equals(name)) {
                     result.add(psiElement);
                 }
-            } else if (psiElement instanceof XmlTag){
-                String componentName = LiteFlowService.getInstance(project).getLiteFlowComponentNameByXmlTag((XmlTag) psiElement);
-                if (componentName != null && componentName.equals(name)){
+            } else if (psiElement instanceof XmlTag) {
+                String componentName =
+                        LiteFlowService.getInstance(project).getLiteFlowComponentNameByXmlTag((XmlTag) psiElement);
+                if (componentName != null && componentName.equals(name)) {
                     result.add(psiElement);
                 }
             }

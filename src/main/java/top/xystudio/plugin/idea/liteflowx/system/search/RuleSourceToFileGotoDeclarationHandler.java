@@ -12,10 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
-import com.intellij.psi.xml.XmlElementType;
-import com.intellij.psi.xml.XmlFile;
-import com.intellij.psi.xml.XmlTag;
-import com.intellij.psi.xml.XmlToken;
+import com.intellij.psi.xml.*;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,33 +29,35 @@ import java.util.Collection;
  */
 public class RuleSourceToFileGotoDeclarationHandler implements GotoDeclarationHandler {
     @Override
-    public PsiElement @Nullable [] getGotoDeclarationTargets(@Nullable PsiElement sourceElement, int offset, Editor editor) {
+    public PsiElement @Nullable [] getGotoDeclarationTargets(@Nullable PsiElement sourceElement, int offset,
+                                                             Editor editor) {
         Project project = sourceElement.getProject();
 
         Collection<PsiElement> result = new ArrayList<>();
         String pathStr = null;
 
-        if (isPropertiesTarget(sourceElement)){
+        if (isPropertiesTarget(sourceElement)) {
             pathStr = ((PropertyImpl) sourceElement.getParent()).getValue();
-        }else if (isYamlTarget(sourceElement)){
+        } else if (isYamlTarget(sourceElement)) {
             pathStr = sourceElement.getText();
-        }else if (isXmlTarget(sourceElement)){
+        } else if (isXmlTarget(sourceElement)) {
             pathStr = sourceElement.getText();
         }
 
-        if (pathStr == null){
+        if (pathStr == null) {
             return null;
         }
 
         String[] paths = pathStr.replaceAll("xml:|json:|yml:", "").split(",|;");
         for (String path : paths) {
-            VirtualFile resourceFile = FileService.getInstance(project).getFileInResourcePath(ModuleUtilCore.findModuleForPsiElement(sourceElement), path.trim());
-            if (resourceFile != null){
+            VirtualFile resourceFile =
+                    FileService.getInstance(project).getFileInResourcePath(ModuleUtilCore.findModuleForPsiElement(sourceElement), path.trim());
+            if (resourceFile != null) {
                 result.add(PsiManager.getInstance(project).findFile(resourceFile));
                 continue;
             }
             VirtualFile absoluteFile = FileService.getInstance(project).getFileInAbsolutePath(path.trim());
-            if (absoluteFile != null){
+            if (absoluteFile != null) {
                 result.add(PsiManager.getInstance(project).findFile(absoluteFile));
                 continue;
             }
@@ -68,7 +67,6 @@ public class RuleSourceToFileGotoDeclarationHandler implements GotoDeclarationHa
     }
 
 
-
     @Override
     public @Nullable @Nls(capitalization = Nls.Capitalization.Title) String getActionText(@NotNull DataContext context) {
         return GotoDeclarationHandler.super.getActionText(context);
@@ -76,78 +74,88 @@ public class RuleSourceToFileGotoDeclarationHandler implements GotoDeclarationHa
 
     /**
      * 过滤sourceElement，是不是来自xml文件的liteflow.ruleSource跳转请求
+     *
      * @param psiElement
      * @return
      */
     private boolean isXmlTarget(PsiElement psiElement) {
-        if (!(psiElement.getContainingFile() instanceof XmlFile)){
+        if (!(psiElement.getContainingFile() instanceof XmlFile)) {
             return false;
         }
-        if (!(psiElement instanceof XmlToken)){
+        if (!(psiElement instanceof XmlToken)) {
             return false;
         }
-        try{
+        try {
             XmlTag parent_x3 = ((XmlTag) psiElement.getParent().getParent().getParent());
             XmlTag parent_x4 = ((XmlTag) psiElement.getParent().getParent().getParent().getParent());
-            if (!parent_x3.getName().equals("property") || !parent_x4.getName().equals("bean")){
+            if (!parent_x3.getName().equals("property") || !parent_x4.getName().equals("bean")) {
                 return false;
             }
-            if (!parent_x3.getAttributeValue("name").equals("ruleSource") && !parent_x3.getAttributeValue("name").equals("rule-source")){
+            if (!parent_x3.getAttributeValue("name").equals("ruleSource") && !parent_x3.getAttributeValue("name").equals("rule-source")) {
                 return false;
             }
-            if (!parent_x4.getAttributeValue("class").equals(Clazz.LiteFlowConfig)){
+            if (!parent_x4.getAttributeValue("class").equals(Clazz.LiteFlowConfig)) {
                 return false;
             }
-            if (((XmlToken)psiElement.getPrevSibling()).getTokenType() != XmlElementType.XML_ATTRIBUTE_VALUE_START_DELIMITER){
+            if (((XmlToken) psiElement.getPrevSibling()).getTokenType() != XmlTokenType.XML_ATTRIBUTE_VALUE_START_DELIMITER) {
                 return false;
             }
-            if (((XmlToken)psiElement.getNextSibling()).getTokenType() != XmlElementType.XML_ATTRIBUTE_VALUE_END_DELIMITER){
+            if (((XmlToken) psiElement.getNextSibling()).getTokenType() != XmlTokenType.XML_ATTRIBUTE_VALUE_END_DELIMITER) {
                 return false;
             }
-        }catch (Exception ignore){return false;}
+        } catch (Exception ignore) {
+            return false;
+        }
         return true;
     }
 
     /**
      * 过滤sourceElement，是不是来自yaml文件的liteflow.ruleSource跳转请求
+     *
      * @param psiElement
      * @return
      */
     private boolean isYamlTarget(PsiElement psiElement) {
-        if (!(psiElement.getContainingFile() instanceof YAMLFile)){
+        if (!(psiElement.getContainingFile() instanceof YAMLFile)) {
             return false;
         }
-        if (!(psiElement instanceof LeafPsiElement)){
+        if (!(psiElement instanceof LeafPsiElement)) {
             return false;
         }
-        try{
+        try {
             String parent_x2 = ((YAMLKeyValueImpl) psiElement.getParent().getParent()).getName();
-            String parent_x4 = ((YAMLKeyValueImpl) psiElement.getParent().getParent().getParent().getParent()).getName();
-            if (!((parent_x2.equals("ruleSource") || parent_x2.equals("rule-source"))  && parent_x4.equals("liteflow"))){
+            String parent_x4 =
+                    ((YAMLKeyValueImpl) psiElement.getParent().getParent().getParent().getParent()).getName();
+            if (!((parent_x2.equals("ruleSource") || parent_x2.equals("rule-source")) && parent_x4.equals("liteflow"))) {
                 return false;
             }
-        }catch (Exception ignore){return false;}
+        } catch (Exception ignore) {
+            return false;
+        }
         return true;
     }
 
     /**
      * 过滤sourceElement，是不是来自properties文件的liteflow.ruleSource跳转请求
+     *
      * @param psiElement
      * @return
      */
-    private boolean isPropertiesTarget(PsiElement psiElement){
-        if (!(psiElement.getContainingFile() instanceof PropertiesFile)){
+    private boolean isPropertiesTarget(PsiElement psiElement) {
+        if (!(psiElement.getContainingFile() instanceof PropertiesFile)) {
             return false;
         }
-        if (!(psiElement instanceof PropertyValueImpl)){
+        if (!(psiElement instanceof PropertyValueImpl)) {
             return false;
         }
-        try{
+        try {
             PropertyImpl context = (PropertyImpl) psiElement.getParent();
-            if (!context.getKey().equals("liteflow.ruleSource") && !context.getKey().equals("liteflow.rule-source")){
+            if (!context.getKey().equals("liteflow.ruleSource") && !context.getKey().equals("liteflow.rule-source")) {
                 return false;
             }
-        }catch (Exception ignore){return false;}
+        } catch (Exception ignore) {
+            return false;
+        }
         return true;
     }
 }
