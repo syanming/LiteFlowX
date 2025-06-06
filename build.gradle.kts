@@ -36,7 +36,7 @@ dependencies {
         bundledPlugin("com.intellij.properties")
         bundledPlugin("org.jetbrains.plugins.yaml")
         bundledPlugin("org.intellij.intelliLang")
-        plugin("JavaScript:252.19874.12")
+        plugin("JavaScript:251.25410.129")
     }
 }
 
